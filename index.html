@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Cờ Caro</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #74ebd5, #acb6e5);
+        }
+        .game-container {
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+        }
+        #game-board {
+            display: grid;
+            grid-template-columns: repeat(10, 40px);
+            grid-gap: 5px;
+            margin: 20px auto;
+            background-color: #444;
+            padding: 5px;
+            border-radius: 10px;
+        }
+        .cell {
+            width: 40px;
+            height: 40px;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .cell:hover {
+            background-color: #e0e0e0;
+        }
+        .winner-message {
+            color: #444;
+            font-size: 20px;
+            margin-top: 10px;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            background: #74c7b8;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #5baaa4;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Cờ Caro</h1>
+        <div id="game-board"></div>
+        <div class="winner-message" id="winner-message"></div>
+        <button onclick="restartGame()">Chơi lại</button>
+    </div>
+    <script>
+        const boardSize = 10;
+        const winCondition = 5; // Số quân cần để thắng
+        let board = [];
+        let currentPlayer = 'X';
+        let gameOver = false;
+
+        const gameBoard = document.getElementById("game-board");
+        const winnerMessage = document.getElementById("winner-message");
+
+        // Khởi tạo bàn cờ
+        function initializeBoard() {
+            board = Array.from({ length: boardSize }, () => Array(boardSize).fill(""));
+            gameBoard.innerHTML = "";
+            for (let i = 0; i < boardSize * boardSize; i++) {
+                const cell = document.createElement("div");
+                cell.classList.add("cell");
+                cell.dataset.row = Math.floor(i / boardSize);
+                cell.dataset.col = i % boardSize;
+                cell.addEventListener("click", handleCellClick);
+                gameBoard.appendChild(cell);
+            }
+        }
+
+        // Xử lý khi người chơi nhấp vào ô
+        function handleCellClick(event) {
+            if (gameOver) return;
+
+            const row = event.target.dataset.row;
+            const col = event.target.dataset.col;
+
+            if (board[row][col] === "") {
+                board[row][col] = currentPlayer;
+                event.target.textContent = currentPlayer;
+                if (checkWinner(row, col)) {
+                    winnerMessage.textContent = `Người chơi ${currentPlayer} thắng! 🎉`;
+                    gameOver = true;
+                } else {
+                    currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+                }
+            }
+        }
+
+        // Kiểm tra chiến thắng
+        function checkWinner(row, col) {
+            row = parseInt(row);
+            col = parseInt(col);
+
+            const directions = [
+                { dr: 0, dc: 1 },  // Hàng ngang
+                { dr: 1, dc: 0 },  // Cột dọc
+                { dr: 1, dc: 1 },  // Chéo chính
+                { dr: 1, dc: -1 }  // Chéo phụ
+            ];
+
+            for (let { dr, dc } of directions) {
+                let count = 1;
+                for (let i = 1; i < winCondition; i++) {
+                    const r = row + dr * i, c = col + dc * i;
+                    if (r < 0 || r >= boardSize || c < 0 || c >= boardSize || board[r][c] !== currentPlayer) break;
+                    count++;
+                }
+                for (let i = 1; i < winCondition; i++) {
+                    const r = row - dr * i, c = col - dc * i;
+                    if (r < 0 || r >= boardSize || c < 0 || c >= boardSize || board[r][c] !== currentPlayer) break;
+                    count++;
+                }
+                if (count >= winCondition) return true;
+            }
+            return false;
+        }
+
+        // Khởi động lại trò chơi
+        function restartGame() {
+            currentPlayer = 'X';
+            gameOver = false;
+            winnerMessage.textContent = "";
+            initializeBoard();
+        }
+
+        // Bắt đầu trò chơi
+        initializeBoard();
+    </script>
+</body>
+</html>
